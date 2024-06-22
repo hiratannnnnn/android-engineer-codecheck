@@ -22,7 +22,9 @@ import java.util.*
 /**
  * TwoFragment で使う
  */
-class SearchViewModel : ViewModel() {
+class SearchViewModel(
+    val context: Context
+) : ViewModel() {
 
     // 検索結果
     fun searchResults(inputText: String): List<item> = runBlocking {
@@ -74,7 +76,7 @@ class SearchViewModel : ViewModel() {
 }
 
 @Parcelize
-data class Items(
+data class item(
     val name: String,
     val ownerIconUrl: String,
     val language: String,
