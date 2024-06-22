@@ -76,7 +76,7 @@ class SearchViewModel(
 }
 
 @Parcelize
-data class item(
+data class Items(
     val name: String,
     val ownerIconUrl: String,
     val language: String,
