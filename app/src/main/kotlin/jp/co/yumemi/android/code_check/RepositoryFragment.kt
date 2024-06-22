@@ -25,16 +25,27 @@ class RepositoryFragment : Fragment(R.layout.fragment_repository) {
 
     private val args: RepositoryFragmentArgs by navArgs()
     private var binding: FragmentRepositoryBinding? = null
-    private val _binding get() = binding!!
+    private val _binding: FragmentRepositoryBinding
+        get() = binding ?: throw IllegalStateException("View binding is accessed before initialization or after destruction.")
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         Log.d("検索した日時", lastSearchDate.toString())
 
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+            findNavController().popBackStack()
+        }
+        callback.isEnabled = true
+
         binding = FragmentRepositoryBinding.bind(view)
 
-        var item = args.item
+        setupActionBar()
+        setupMenu()
+        
+        // varでなくvalで問題ない
+        val item = args.item
+        val context = requireContext()
 
         _binding.ownerIconView.load(item.ownerIconUrl);
         _binding.nameView.text = item.name;
@@ -43,5 +54,40 @@ class RepositoryFragment : Fragment(R.layout.fragment_repository) {
         _binding.watchersView.text = "${item.watchersCount} watchers";
         _binding.forksView.text = "${item.forksCount} forks";
         _binding.openIssuesView.text = "${item.openIssuesCount} open issues";
+    }
+
+    // 戻るボタンの実装
+    private fun setupActionBar() {
+        // 強制ダウンキャストの回避
+        (activity as? AppCompatActivity)?.supportActionBar?.apply {
+            title = "Repository Details"
+            setDisplayHomeAsUpEnabled(true)
+        }
+        Log.d("TwoFragment", "ActionBar set up with back button")
+    }
+
+    private fun setupMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+
+            }
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    android.R.id.home -> {
+                        activity?.onBackPressedDispatcher?.onBackPressed()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+        // 強制ダウンキャストの回避
+        (activity as? AppCompatActivity)?.supportActionBar?.setDisplayHomeAsUpEnabled(false)
     }
 }
