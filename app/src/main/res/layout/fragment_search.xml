@@ -27,10 +27,6 @@
             app:endIconMode="clear_text"
             app:endIconTint="@android:color/darker_gray"
             app:hintTextColor="@android:color/darker_gray"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             app:startIconDrawable="@android:drawable/ic_menu_search"
             app:startIconTint="@android:color/darker_gray">
 
