@@ -73,7 +73,7 @@ val diff_util= object: DiffUtil.ItemCallback<item>(){
     }
 
 }
-
+// test
 class CustomAdapter(
     private val itemClickListener: OnItemClickListener,
 ) : ListAdapter<item, CustomAdapter.ViewHolder>(diff_util){
