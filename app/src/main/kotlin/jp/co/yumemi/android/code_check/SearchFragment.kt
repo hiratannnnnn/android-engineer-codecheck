@@ -62,13 +62,13 @@ class SearchFragment: Fragment(R.layout.fragment_search) {
     }
 
     private fun setupObservers() {
-        _viewModel.searchResults.observe(viewLifecyclerOwner) { results ->
+        _viewModel.searchResults.observe(viewLifecycleOwner) { results ->
             _adapter.submitList(results)
         }
     }
 
     private fun setupSearchInput() {
-        _binidng.searchInputText.setOnEditorActionListener { editText, action, keyEvent ->
+        _binding.searchInputText.setOnEditorActionListener { editText, action, keyEvent ->
             when (action) {
                 EditorInfo.IME_ACTION_SEARCH,
                 EditorInfo.IME_ACTION_DONE,
@@ -88,14 +88,14 @@ class SearchFragment: Fragment(R.layout.fragment_search) {
     }
 
     private fun handleSearchAction(query: String) {
-        viewLifecycleOwner.lifeyclerScope.launch {
+        viewLifecycleOwner.lifecyclerScope.launch {
             _viewModel.searchResults(requireContext(), query)
         }
     }
 
     fun gotoRepositoryFragment(item: Items) {
         // localな変数は_は不要とAndroid Studioに言われたので_を取った。
-        val action = OneFragmentDirections
+        val action = SearchFragmentDirections
             .actionRepositoriesFragmentToRepositoryFragment(item = item)
         findNavController().navigate(action)
     }
@@ -125,12 +125,12 @@ class CustomAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-    	val _item = getItem(position)
+    	val item = getItem(position)
         (holder.itemView.findViewById<View>(R.id.repositoryNameView) as TextView).text =
-            _item.name
+            item.name
 
     	holder.itemView.setOnClickListener {
-     		itemClickListener.itemClick(_item)
+     		itemClickListener.itemClick(item)
     	}
     }
     // DIFF_UTILをCustomAdapter class内にまとめておく
