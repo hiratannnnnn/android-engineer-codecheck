@@ -5,8 +5,17 @@ package jp.co.yumemi.android.code_check
 
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.View
+import android.view.MenuItem
+import androidx.activity.addCallback
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import coil.load
 import jp.co.yumemi.android.code_check.TopActivity.Companion.lastSearchDate
@@ -15,7 +24,6 @@ import jp.co.yumemi.android.code_check.databinding.FragmentRepositoryBinding
 class RepositoryFragment : Fragment(R.layout.fragment_repository) {
 
     private val args: RepositoryFragmentArgs by navArgs()
-
     private var binding: FragmentRepositoryBinding? = null
     private val _binding get() = binding!!
 
