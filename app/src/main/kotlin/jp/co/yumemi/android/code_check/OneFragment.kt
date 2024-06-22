@@ -14,7 +14,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.*
 import jp.co.yumemi.android.code_check.databinding.FragmentOneBinding
 
-class OneFragment: Fragment(R.layout.fragment_one){
+class OneFragment: Fragment(R.layout.fragment_one) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -26,7 +26,7 @@ class OneFragment: Fragment(R.layout.fragment_one){
         val _layoutManager = LinearLayoutManager(context!!)
         val _dividerItemDecoration =
             DividerItemDecoration(context!!, _layoutManager.orientation)
-        val _adapter = CustomAdapter(object : CustomAdapter.OnItemClickListener{
+        val _adapter = CustomAdapter(object : CustomAdapter.OnItemClickListener {
             override fun itemClick(item: item){
                 gotoRepositoryFragment(item)
             }
@@ -34,9 +34,9 @@ class OneFragment: Fragment(R.layout.fragment_one){
 
         _binding.searchInputText
             .setOnEditorActionListener{ editText, action, _ ->
-                if (action== EditorInfo.IME_ACTION_SEARCH){
+                if (action== EditorInfo.IME_ACTION_SEARCH) {
                     editText.text.toString().let {
-                        _viewModel.searchResults(it).apply{
+                        _viewModel.searchResults(it).apply {
                             _adapter.submitList(this)
                         }
                     }
@@ -45,7 +45,7 @@ class OneFragment: Fragment(R.layout.fragment_one){
                 return@setOnEditorActionListener false
             }
 
-        _binding.recyclerView.also{
+        _binding.recyclerView.also {
             it.layoutManager= _layoutManager
             it.addItemDecoration(_dividerItemDecoration)
             it.adapter= _adapter
@@ -59,7 +59,7 @@ class OneFragment: Fragment(R.layout.fragment_one){
     }
 }
 
-val diff_util= object: DiffUtil.ItemCallback<item>(){
+val diff_util= object: DiffUtil.ItemCallback<item>() {
     override fun areItemsTheSame(oldItem: item, newItem: item): Boolean {
         return oldItem.name== newItem.name
     }
@@ -90,7 +90,7 @@ class CustomAdapter(
         (holder.itemView.findViewById<View>(R.id.repositoryNameView) as TextView).text=
             _item.name
 
-    	holder.itemView.setOnClickListener{
+    	holder.itemView.setOnClickListener {
      		itemClickListener.itemClick(_item)
     	}
     }
