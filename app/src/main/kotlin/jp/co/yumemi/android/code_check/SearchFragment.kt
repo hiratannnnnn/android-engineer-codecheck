@@ -13,8 +13,12 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.*
 import jp.co.yumemi.android.code_check.databinding.FragmentSearchBinding
-// テスト1
-// テスト2
+import android.view.KeyEvent
+
+import kotlinx.coroutines.*
+import android.util.Log
+import androidx.lifecycle.lifecycleScope
+
 class SearchFragment: Fragment(R.layout.fragment_search) {
 
     // 必要なときに初めて初期化する方式
@@ -38,39 +42,62 @@ class SearchFragment: Fragment(R.layout.fragment_search) {
         // ここでbindingを初期化
         binding = FragmentSearchBinding.bind(view)
 
-        val _layoutManager = LinearLayoutManager(context!!)
-        val _dividerItemDecoration =
-            DividerItemDecoration(context!!, _layoutManager.orientation)
-        val _adapter = CustomAdapter(object : CustomAdapter.OnItemClickListener {
-            override fun itemClick(item: Items) {
-                gotoRepositoryFragment(item)
-            }
-        })
+        // モジュール化し、とりわけAPIからfetchする部分はViewModelの方に移植
+        setupRecyclerView()
+        setupObservers()
+        setupSearchInput()
+    }
 
-        _binding.searchInputText
-            .setOnEditorActionListener{ editText, action, _ ->
-                if (action== EditorInfo.IME_ACTION_SEARCH){
-                    editText.text.toString().let {
-                        _viewModel.searchResults(it).apply{
-                            _adapter.submitList(this)
-                        }
-                    }
-                    return@setOnEditorActionListener true
+    private fun setupRecyclerView() {
+        // contextはここで初めて取得する
+        val layoutManager = LinearLayoutManager(requireContext())
+        val dividerItemDecoration = DividerItemDecoration(requireContext())
+        _binding.recyclerView.apply {
+            this.layoutManager = layoutManager
+            this.addItemDecoration(dividerItemDecoration)
+            this.adapter = _adapter
+            // ↑の部分で、adapter変数の_がないとバグが発生したので、
+            // 全体を通して_をつけた変数名で統一するのが望ましいと考えた。
+        }
+    }
+
+    private fun setupObservers() {
+        _viewModel.searchResults.observe(viewLifecyclerOwner) { results ->
+            _adapter.submitList(results)
+        }
+    }
+
+    private fun setupSearchInput() {
+        _binidng.searchInputText.setOnEditorActionListener { editText, action, keyEvent ->
+            when (action) {
+                EditorInfo.IME_ACTION_SEARCH,
+                EditorInfo.IME_ACTION_DONE,
+                EditorInfo.IME_ACTION_NEXT -> {
+                    handleSearchAction(editText.text.toString())
+                    true
                 }
-                return@setOnEditorActionListener false
+                else -> {
+                    if (keyEvent != null && keyEvent.keyCode == KeyEvent.KEYCODE_ENTER) {
+                        handleSearchAction(editText.text.toString())
+                        true
+                    }
+                    false
+                }
             }
+        }
+    }
 
-        _binding.recyclerView.also {
-            it.layoutManager = _layoutManager
-            it.addItemDecoration(_dividerItemDecoration)
-            it.adapter = _adapter
+    private fun handleSearchAction(query: String) {
+        viewLifecycleOwner.lifeyclerScope.launch {
+            _viewModel.searchResults(requireContext(), query)
         }
     }
 
     fun gotoRepositoryFragment(item: Items) {
-        val _action = OneFragmentDirections
+        // localな変数は_は不要とAndroid Studioに言われたので_を取った。
+        val action = OneFragmentDirections
             .actionRepositoriesFragmentToRepositoryFragment(item = item)
-        findNavController().navigate(_action)
+        findNavController().navigate(action)
     }
 
     override fun onDestroyView() {
@@ -80,16 +107,6 @@ class SearchFragment: Fragment(R.layout.fragment_search) {
     }
 }
 
-val DIFF_UTIL = object: DiffUtil.ItemCallback<Items>() {
-    override fun areItemsTheSame(oldItem: Items, newItem: Items): Boolean {
-        return oldItem.name == newItem.name
-    }
-
-    override fun areContentsTheSame(oldItem: Items, newItem: Items): Boolean {
-        return oldItem == newItem
-    }
-}
-// test
 class CustomAdapter(
     private val itemClickListener: OnItemClickListener,
 ) : ListAdapter<item, CustomAdapter.ViewHolder>(DIFF_UTIL) {
@@ -101,9 +118,10 @@ class CustomAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-    	val _view = LayoutInflater.from(parent.context)
+    	// 上と同様の理由で_を取った。
+        val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.layout_item, parent, false)
-    	return ViewHolder(_view)
+    	return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -114,5 +132,17 @@ class CustomAdapter(
     	holder.itemView.setOnClickListener {
      		itemClickListener.itemClick(_item)
     	}
+    }
+    // DIFF_UTILをCustomAdapter class内にまとめておく
+    companion object {
+        val DIFF_UTIL = object: DiffUtil.ItemCallback<Items>() {
+            override fun areItemsTheSame(oldItem: Items, newItem: Items): Boolean {
+                return oldItem.name == newItem.name
+            }
+
+            override fun areContentsTheSame(oldItem: Items, newItem: Items): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
 }
