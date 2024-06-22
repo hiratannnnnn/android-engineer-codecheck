@@ -22,9 +22,7 @@ import java.util.*
 /**
  * TwoFragment で使う
  */
-class SearchViewModel(
-    val context: Context
-) : ViewModel() {
+class SearchViewModel : ViewModel() {
 
     // 検索結果
     fun searchResults(inputText: String): List<item> = runBlocking {

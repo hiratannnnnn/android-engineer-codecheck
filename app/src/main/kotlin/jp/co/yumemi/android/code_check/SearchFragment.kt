@@ -17,12 +17,26 @@ import jp.co.yumemi.android.code_check.databinding.FragmentSearchBinding
 // テスト2
 class SearchFragment: Fragment(R.layout.fragment_search) {
 
+    // 必要なときに初めて初期化する方式
+    private var binding: FragmentSearchBinding? = null
+    private val _binding: FragmentSearchBinding
+        get() = binding ?: throw IllegalStateException("View binding is accessed before initialization or after destruction.")
+
+    // by lazyを用いた初期化
+    private val _viewModel: SearchViewModel by lazy { SearchViewModel() }
+    private val _adapter: CustomAdapter by lazy {
+        CustomAdapter(object : CustomAdapter.OnItemClickListener {
+            override fun itemClick(item: Items) {
+                gotoRepositoryFragment(item)
+            }
+        })
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val _binding = FragmentOneBinding.bind(view)
-
-        val _viewModel = OneViewModel(context!!)
+        // ここでbindingを初期化
+        binding = FragmentSearchBinding.bind(view)
 
         val _layoutManager = LinearLayoutManager(context!!)
         val _dividerItemDecoration =
@@ -57,6 +71,12 @@ class SearchFragment: Fragment(R.layout.fragment_search) {
         val _action = OneFragmentDirections
             .actionRepositoriesFragmentToRepositoryFragment(item = item)
         findNavController().navigate(_action)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // メモリを開放することでメモリリークを防ぐ。
+        binding = null
     }
 }
 
